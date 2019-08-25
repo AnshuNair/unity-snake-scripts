@@ -12,13 +12,19 @@ namespace SA
         public Color color1;
         public Color color2;
 
+        GameObject mapObject;
+        SpriteRenderer mapRenderer;
+
         private void Start()
         {
-            
+            CreateMap();
         }
 
         void CreateMap()
         {
+            mapObject = new GameObject("map");
+            mapRenderer = mapObject.AddComponent<SpriteRenderer>();
+
             Texture2D txt = new Texture2D(maxWidth, maxHeight);
 
             for (int i = 0; i < maxWidth; i++)
@@ -51,6 +57,12 @@ namespace SA
                     #endregion
                 }
             }
+
+            txt.filterMode = FilterMode.Point;
+            txt.Apply();
+            Rect rect = new Rect(0, 0, maxWidth, maxHeight);
+            Sprite sprite = Sprite.Create(txt, rect, Vector2.one * .5f, 1, 0, SpriteMeshType.FullRect);
+            mapRenderer.sprite = sprite;
         }
     }
 }
