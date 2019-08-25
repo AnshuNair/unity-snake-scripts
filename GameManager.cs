@@ -19,12 +19,16 @@ namespace SA
         GameObject playerObj;
         GameObject mapObject;
         GameObject appleObj;
+        GameObject tailParent;
         SpriteRenderer mapRenderer;
+
+        Sprite playerSprite;
 
         Node playerNode;        
         Node appleNode;
         Node[,] grid;
         List<Node> availableNodes = new List<Node>();
+        List<SpecialNode> tail = new List<SpecialNode>();
 
         bool up, left, right, down;
 
@@ -118,10 +122,12 @@ namespace SA
         {
             playerObj = new GameObject("Player");
             SpriteRenderer playerRender = playerObj.AddComponent<SpriteRenderer>();
-            playerRender.sprite = CreateSprite(playerColor);
+            playerSprite = CreateSprite(playerColor);
+            playerRender.sprite = playerSprite;
             playerRender.sortingOrder = 1;
             playerNode = GetNode(3, 3);
             playerObj.transform.position = playerNode.worldPosition;
+            tailParent = new GameObject("tailParent");
         }
         void PlaceCamera()
         {
@@ -206,10 +212,17 @@ namespace SA
                     isScore = true;                    
                 }
 
-                availableNodes.Remove(playerNode);
+                Node previousNode = playerNode;
+                availableNodes.Add(previousNode);
                 playerObj.transform.position = targetNode.worldPosition;
                 playerNode = targetNode;
-                availableNodes.Add(playerNode);
+                availableNodes.Remove(playerNode);
+
+                if (isScore)
+                {
+                    tail.Add(CreateTailNode(previousNode.x, previousNode.y));
+                    availableNodes.Remove(previousNode);
+                }
 
                 //Move tail
 
@@ -242,7 +255,19 @@ namespace SA
                 return null;
 
             return grid[x, y];
-        }       
+        }
+        SpecialNode CreateTailNode(int x, int y)
+        {
+            SpecialNode s = new SpecialNode();
+            s.node = GetNode(x, y);
+            s.obj = new GameObject();
+            s.obj.transform.parent = tailParent.transform;
+            s.obj.transform.position = s.node.worldPosition;
+            SpriteRenderer r = s.obj.AddComponent<SpriteRenderer>();
+            r.sprite = playerSprite;
+            r.sortingOrder = 1;
+            return s;
+        }
         Sprite CreateSprite(Color targetColor)
         {
             Texture2D txt = new Texture2D(1, 1);
