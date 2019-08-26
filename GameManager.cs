@@ -24,8 +24,9 @@ namespace SA
 
         Sprite playerSprite;
 
-        Node playerNode;        
+        Node playerNode;
         Node appleNode;
+        Node prevPlayerNode;
         Node[,] grid;
         List<Node> availableNodes = new List<Node>();
         List<SpecialNode> tail = new List<SpecialNode>();
@@ -35,10 +36,12 @@ namespace SA
         public float moveRate = 0.1f;
         float timer;
 
+        Direction targetDirection;
         Direction curDirection;
+
         public enum Direction
         {
-            up,down,left,right
+            up, down, left, right
         }
 
         #region Init
@@ -48,7 +51,7 @@ namespace SA
             PlacePlayer();
             PlaceCamera();
             CreateApple();
-            curDirection = Direction.right;
+            targetDirection = Direction.right;
         }
         void CreateMap()
         {
@@ -148,8 +151,9 @@ namespace SA
             if (timer > moveRate)
             {
                 timer = 0;
+                curDirection = targetDirection;
                 MovePlayer();
-            }           
+            }
         }
 
         void GetInput()
@@ -163,19 +167,26 @@ namespace SA
         {
             if (up)
             {
-                curDirection = Direction.up;
+                SetDirection(Direction.up);
             }
             else if (down)
             {
-                curDirection = Direction.down;
+                SetDirection(Direction.down);
             }
             else if (left)
             {
-                curDirection = Direction.left;
+                SetDirection(Direction.left);
             }
             else if (right)
             {
-                curDirection = Direction.right;
+                SetDirection(Direction.right);
+            }
+        }
+        void SetDirection(Direction d)
+        {
+            if (!isOpposite(d))
+            {              
+                targetDirection = d;
             }
         }
         void MovePlayer()
@@ -206,42 +217,49 @@ namespace SA
             }
             else
             {
-                bool isScore = false;
-
-                if (targetNode == appleNode)
+                if (isTailNode(targetNode))
                 {
-                    isScore = true;                    
+                    //Game Over
                 }
 
-                Node previousNode = playerNode;
-                availableNodes.Add(previousNode);                
-
-                if (isScore)
+                else
                 {
-                    tail.Add(CreateTailNode(previousNode.x, previousNode.y));
-                    availableNodes.Remove(previousNode);
-                }
+                    bool isScore = false;
 
-                MoveTail();
-
-                PlacePlayerObject(playerObj, targetNode.worldPosition);
-                playerNode = targetNode;
-                availableNodes.Remove(playerNode);
-
-                if (isScore)
-                {
-                    if (availableNodes.Count > 0)
+                    if (targetNode == appleNode)
                     {
-                        RandomlyPlaceApple();
+                        isScore = true;
                     }
-                    else
+
+                    Node previousNode = playerNode;
+                    availableNodes.Add(previousNode);
+
+                    if (isScore)
                     {
-                        //You won
-                    }                    
+                        tail.Add(CreateTailNode(previousNode.x, previousNode.y));
+                        availableNodes.Remove(previousNode);
+                    }
+
+                    MoveTail();
+
+                    PlacePlayerObject(playerObj, targetNode.worldPosition);
+                    playerNode = targetNode;
+                    availableNodes.Remove(playerNode);
+
+                    if (isScore)
+                    {
+                        if (availableNodes.Count > 0)
+                        {
+                            RandomlyPlaceApple();
+                        }
+                        else
+                        {
+                            //You won
+                        }
+                    }
                 }
             }
         }
-
         void MoveTail()
         {
             Node prevNode = null;
@@ -280,6 +298,45 @@ namespace SA
             Node n = availableNodes[ran];
             PlacePlayerObject(appleObj, n.worldPosition);
             appleNode = n;
+        }
+        bool isOpposite(Direction d)
+        {
+            switch (d)
+            {
+                default:
+                case Direction.up:
+                    if (curDirection == Direction.down)
+                        return true;
+                    else
+                        return false;
+                case Direction.down:
+                    if (curDirection == Direction.up)
+                        return true;
+                    else
+                        return false;
+                case Direction.left:
+                    if (curDirection == Direction.right)
+                        return true;
+                    else
+                        return false;
+                case Direction.right:
+                    if (curDirection == Direction.left)
+                        return true;
+                    else
+                        return false;
+            }
+        }
+        bool isTailNode(Node n)
+        {
+            for (int i = 0; i < tail.Count; i++)
+            {
+                if (tail[i].node == n)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
         Node GetNode(int x, int y)
         {
