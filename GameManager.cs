@@ -224,7 +224,7 @@ namespace SA
                     availableNodes.Remove(previousNode);
                 }
 
-                //Move tail
+                MoveTail();
 
                 if (isScore)
                 {
@@ -237,6 +237,31 @@ namespace SA
                         //You won
                     }                    
                 }
+            }
+        }
+
+        void MoveTail()
+        {
+            Node prevNode = null;
+
+            for (int i = 0; i < tail.Count; i++)
+            {
+                SpecialNode p = tail[i];
+                availableNodes.Add(p.node);
+                if (i == 0)
+                {
+                    prevNode = p.node;
+                    p.node = playerNode;
+                }
+                else
+                {
+                    Node prev = p.node;
+                    p.node = prevNode;
+                    prevNode = prev;
+                }
+
+                availableNodes.Remove(p.node);
+                p.obj.transform.position = p.node.worldPosition;
             }
         }
         #endregion
