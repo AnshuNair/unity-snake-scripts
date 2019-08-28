@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 namespace SA
 {
@@ -34,6 +35,9 @@ namespace SA
 
         bool up, left, right, down;
 
+        int currentScore;
+        int highScore;
+
         public bool isGameOver;
         public bool isFirstInput;
         public float moveRate = 0.1f;
@@ -41,6 +45,9 @@ namespace SA
 
         Direction targetDirection;
         Direction curDirection;
+
+        public Text currentScoreText;
+        public Text highScoreText;
 
         public enum Direction
         {
@@ -50,6 +57,7 @@ namespace SA
         public UnityEvent onStart;
         public UnityEvent onGameOver;
         public UnityEvent firstInput;
+        public UnityEvent onScore;
 
         #region Init
         private void Start()
@@ -65,6 +73,9 @@ namespace SA
             PlaceCamera();
             CreateApple();
             targetDirection = Direction.right;
+            isGameOver = false;
+            currentScore = 0;
+            UpdateScore();
         }
 
         public void ClearReferences()
@@ -177,11 +188,19 @@ namespace SA
         private void Update()
         {
             if (isGameOver)
+            {
+                if (Input.GetKeyDown(KeyCode.R))
+                {
+                    onStart.Invoke();
+                }
                 return;
+            }
+           
             GetInput();
-            SetPlayerDirection();
+            
             if (isFirstInput)
             {
+                SetPlayerDirection();
                 timer += Time.deltaTime;
                 if (timer > moveRate)
                 {
@@ -293,6 +312,14 @@ namespace SA
 
                     if (isScore)
                     {
+                        currentScore++;
+                        if (currentScore >= highScore)
+                        {
+                            highScore = currentScore;
+                        }
+
+                        onScore.Invoke();
+
                         if (availableNodes.Count > 0)
                         {
                             RandomlyPlaceApple();
@@ -336,6 +363,11 @@ namespace SA
         {
             isGameOver = true;
             isFirstInput = false;
+        }
+        public void UpdateScore()
+        {
+            currentScoreText.text = currentScore.ToString();
+            highScoreText.text = highScore.ToString();
         }
         void PlacePlayerObject(GameObject obj, Vector3 pos)
         {
