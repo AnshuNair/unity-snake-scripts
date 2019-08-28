@@ -34,6 +34,8 @@ namespace SA
 
         bool up, left, right, down;
 
+        public bool isGameOver;
+        public bool isFirstInput;
         public float moveRate = 0.1f;
         float timer;
 
@@ -174,14 +176,27 @@ namespace SA
         #region Update        
         private void Update()
         {
+            if (isGameOver)
+                return;
             GetInput();
             SetPlayerDirection();
-            timer += Time.deltaTime;
-            if (timer > moveRate)
+            if (isFirstInput)
             {
-                timer = 0;
-                curDirection = targetDirection;
-                MovePlayer();
+                timer += Time.deltaTime;
+                if (timer > moveRate)
+                {
+                    timer = 0;
+                    curDirection = targetDirection;
+                    MovePlayer();
+                }
+            }
+            else
+            {
+                if (up || down || left || right)
+                {
+                    isFirstInput = true;
+                    firstInput.Invoke();
+                }
             }
         }
         void GetInput()
@@ -317,6 +332,11 @@ namespace SA
         #endregion
 
         #region Utilities
+        public void GameOver()
+        {
+            isGameOver = true;
+            isFirstInput = false;
+        }
         void PlacePlayerObject(GameObject obj, Vector3 pos)
         {
             pos += Vector3.one * .5f;
