@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace SA
 {
@@ -44,14 +45,42 @@ namespace SA
             up, down, left, right
         }
 
+        public UnityEvent onStart;
+        public UnityEvent onGameOver;
+        public UnityEvent firstInput;
+
         #region Init
         private void Start()
         {
+            onStart.Invoke();
+        }
+
+        public void StartNewGame()
+        {
+            ClearReferences();
             CreateMap();
             PlacePlayer();
             PlaceCamera();
             CreateApple();
             targetDirection = Direction.right;
+        }
+
+        public void ClearReferences()
+        {
+            if(mapObject != null)
+                Destroy(mapObject);
+            if (playerObj != null)
+                Destroy(playerObj);
+            if (appleObj != null)
+                Destroy(appleObj);
+            foreach (var t in tail)
+            {
+                if (t.obj != null)
+                    Destroy(t.obj);
+            }
+            tail.Clear();
+            availableNodes.Clear();
+            grid = null;
         }
         void CreateMap()
         {
@@ -155,7 +184,6 @@ namespace SA
                 MovePlayer();
             }
         }
-
         void GetInput()
         {
             up = Input.GetButtonDown("Up");
@@ -214,12 +242,14 @@ namespace SA
             if (targetNode == null)
             {
                 //Game Over
+                onGameOver.Invoke();
             }
             else
             {
                 if (isTailNode(targetNode))
                 {
                     //Game Over
+                    onGameOver.Invoke();
                 }
 
                 else
