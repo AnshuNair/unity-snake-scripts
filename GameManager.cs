@@ -72,7 +72,7 @@ namespace SA
             PlacePlayer();
             PlaceCamera();
             CreateApple();
-            targetDirection = Direction.right;
+            //targetDirection = Direction.right;
             isGameOver = false;
             currentScore = 0;
             UpdateScore();
